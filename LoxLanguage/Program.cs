@@ -47,8 +47,9 @@ namespace LoxLanguage
             Scanner scanner = new Scanner(source);
             List<Token> tokens = scanner.ScanTokens();
 
-            foreach (var token in tokens) {
-                Console.WriteLine(token);
+            foreach (var token in tokens) {                
+                Console.WriteLine(token.ToString());
+                //Console.WriteLine(token.GetType);
             }
         }
 
