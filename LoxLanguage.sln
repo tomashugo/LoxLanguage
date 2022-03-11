@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoxLanguage", "LoxLanguage\LoxLanguage.csproj", "{BC5D41B8-C44D-407C-A205-F0EADC6D1825}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC5D41B8-C44D-407C-A205-F0EADC6D1825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC5D41B8-C44D-407C-A205-F0EADC6D1825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC5D41B8-C44D-407C-A205-F0EADC6D1825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC5D41B8-C44D-407C-A205-F0EADC6D1825}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E88C68BC-D92F-43F5-A8EF-550AA04E0FCE}
+	EndGlobalSection
+EndGlobal
