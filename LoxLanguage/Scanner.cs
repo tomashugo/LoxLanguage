@@ -98,7 +98,7 @@ namespace LoxLanguage {
         private void Identifier() {
             while (IsAlphaNumeric(Peek())) Advance();
 
-            string text = Source.Substring(Start, Current);
+            string text = Source.Substring(Start, Current - Start);
             
             TokenType type;
 
@@ -125,8 +125,8 @@ namespace LoxLanguage {
             IFormatProvider provider;
             provider = CultureInfo.CreateSpecificCulture("en-US");
 
-            Console.WriteLine(Source.Substring(Start, Current));
-            AddToken(TokenType.NUMBER, double.Parse(Source.Substring(Start, Current), provider));
+            Console.WriteLine(Source.Substring(Start, Current - Start));
+            AddToken(TokenType.NUMBER, double.Parse(Source.Substring(Start, Current - Start), provider));
         }
         // Likewise Number()
         private void String() {
@@ -142,7 +142,7 @@ namespace LoxLanguage {
 
             Advance();
 
-            string value = Source.Substring(Start + 1, Current - 2);
+            string value = Source.Substring(Start + 1, Current - Start - 2);
             AddToken(TokenType.STRING, value);
         }
         private char Peek() {
@@ -182,7 +182,7 @@ namespace LoxLanguage {
         }
 
         private void AddToken(TokenType type, object literal) {
-            string text = Source.Substring(Start, Current);
+            string text = Source.Substring(Start, Current - Start);
             Tokens.Add(new Token(type, text, literal, Line));
         }
     }
