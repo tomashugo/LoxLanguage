@@ -71,6 +71,8 @@ namespace LoxLanguage {
                     // If comment it goes until the end of the line.
                     if (Match('/')) {
                         while (Peek() != '\n' && !IsAtEnd()) Advance();
+                    } else if (Match('*')) {
+                        MultiLineComment();
                     }
                     break;
                 case ' ':
@@ -109,7 +111,6 @@ namespace LoxLanguage {
         }
         // Start freezes inside this method and Current increment
         private void Number() {
-
             while (IsDigit(Peek())) Advance();
 
             // Look for a fractional part.
@@ -124,8 +125,7 @@ namespace LoxLanguage {
 
             IFormatProvider provider;
             provider = CultureInfo.CreateSpecificCulture("en-US");
-
-            Console.WriteLine(Source.Substring(Start, Current - Start));
+            
             AddToken(TokenType.NUMBER, double.Parse(Source.Substring(Start, Current - Start), provider));
         }
         // Likewise Number()
@@ -144,6 +144,17 @@ namespace LoxLanguage {
 
             string value = Source.Substring(Start + 1, Current - Start - 2);
             AddToken(TokenType.STRING, value);
+        }
+        private void MultiLineComment() {
+            while (!IsAtEnd() && !(Peek() == '*' && PeekNext() == '/')) {                
+                if (Peek() == '\n') {
+                    Line++;                    
+                }                
+                Advance();
+            }
+         
+            Advance();
+            Advance();            
         }
         private char Peek() {
             if (IsAtEnd()) return '\0';
