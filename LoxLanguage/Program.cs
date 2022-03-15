@@ -2,7 +2,8 @@
  *  Keeping track
  *  
  *  06/03/2022 20:27 - stopped at 4.5.2
- * 
+ *  13/03/2022 21:55 - stopped at 5.2.1
+ *  15/03/2022 18:46 - stopped at 5.3
  */
 
 using System.Text;
@@ -34,7 +35,9 @@ namespace LoxLanguage
 
             for (;;) {
                 Console.Write("> ");
+                #pragma warning disable CS8600 // Conversão de literal nula ou possível valor nulo em tipo não anulável.
                 string line = reader.ReadLine();
+                #pragma warning restore CS8600 // Conversão de literal nula ou possível valor nulo em tipo não anulável.
                 Console.WriteLine(line);
 
                 if (line == null) break;
