@@ -22,17 +22,31 @@ namespace LoxLanguage.tool {
             using (StreamWriter sw = File.CreateText(path)) {
                 sw.WriteLine("namespace LoxLanguage {");
                 sw.WriteLine("    abstract class " + baseName+ " {");
-                sw.WriteLine("    }");                
+                sw.WriteLine("       public abstract R Accept<R>(Visitor<R> visitor);");
+                sw.WriteLine("    }");
+
+                DefineVisitor(sw, baseName, types);
 
                 foreach (var type in types) {
                     var className = type.Split(":")[0].Trim();
                     var fields = type.Split(":")[1].Trim();
 
                     DefineType(sw, baseName, className, fields);
-                }
+                }                
 
                 sw.WriteLine("}");
             }
+        }
+
+        private static void DefineVisitor(StreamWriter sw, string baseName, List<string> types) {
+            sw.WriteLine("    interface Visitor<R> {");
+
+            foreach (var type in types) {
+                var typeName = type.Split(":")[0].Trim();
+                sw.WriteLine("       R Visit" + typeName + baseName + "(" + typeName + " " + baseName.ToLower() + ");");                   
+            }
+
+            sw.WriteLine("    }");
         }
 
         public static void DefineType(StreamWriter sw, string baseName, string className, string fieldList) {
@@ -50,7 +64,12 @@ namespace LoxLanguage.tool {
                 string name = field.Trim().Split(" ")[1];
                 sw.WriteLine("            this." + name + " = " + name + ";");
             }
-            
+
+            sw.WriteLine("        }");
+
+            sw.WriteLine("");
+            sw.WriteLine("        public override R Accept<R>(Visitor<R> visitor) {");
+            sw.WriteLine("            return visitor.Visit" + className + baseName + "(this);");
             sw.WriteLine("        }");
 
             sw.WriteLine("    }");

@@ -11,7 +11,7 @@
      */
     internal class Token {
         readonly TokenType Type;
-        readonly string Lexeme;
+        public string Lexeme { get; }
         readonly object Literal;
         readonly int Line;
         public Token (TokenType type, string lexeme, object literal, int line) {
