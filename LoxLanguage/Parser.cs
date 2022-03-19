@@ -37,11 +37,11 @@ namespace LoxLanguage {
             return Equality();
         }
 
-        // equality → comparison ( ( "!=" | "==" ) comparison )* ;
+        // equality → comparison ( ( "!=" | "==" | "," ) comparison )* ;
         private Expr Equality() {
             Expr expr = Comparison();
 
-            while(Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+            while(Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL, TokenType.COMMA)) {
                 Token oper = Previous();
                 Expr right = Comparison();
                 expr = new Binary(expr, oper, right);
@@ -107,19 +107,28 @@ namespace LoxLanguage {
            *                  | "(" expression ")" ;
            */
         private Expr Primary() {
-            if (Match(TokenType.FALSE)) return new Literal(false);
-            if (Match(TokenType.TRUE)) return new Literal(true);
-            if (Match(TokenType.NIL)) return new Literal(null);
+            if (Match(TokenType.FALSE)) {
+                return new Literal(false);
+            }
+
+            if (Match(TokenType.TRUE)) { 
+                return new Literal(true);                
+            }
+
+
+            if (Match(TokenType.NIL)) {
+                return new Literal(null);
+            }
 
             if (Match(TokenType.NUMBER, TokenType.STRING)) {
-                return new Literal(Previous().Literal);
+                return new Literal(Previous().Literal);              
             }
 
             if (Match(TokenType.LEFT_PAREN)) {
                 Expr expr = Expression(); // Calling recursively a new expression
                 Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
                 return new Grouping(expr);
-            }
+            }            
 
             throw Error(Peek(), "Expect expression.");
         }
