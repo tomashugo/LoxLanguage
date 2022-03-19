@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LoxLanguage {
     internal class AstPrinter : Visitor<string> {
-        string Print(Expr expr) {
+        public string Print(Expr expr) {
             return expr.Accept(this);
         }
         public string VisitBinaryExpr(Binary expr) {

@@ -50,14 +50,30 @@ namespace LoxLanguage
             Scanner scanner = new Scanner(source);
             List<Token> tokens = scanner.ScanTokens();
 
-            foreach (var token in tokens) {                
-                Console.WriteLine(token.ToString());
-                //Console.WriteLine(token.GetType);
-            }
+            Parser parser = new Parser(tokens);
+            Expr expression = parser.Parse();
+
+            if (HadError) return;
+
+            Console.WriteLine(new AstPrinter().Print(expression));
+
+            //foreach (var token in tokens) {                
+            //    Console.WriteLine(token.ToString());
+            //    //Console.WriteLine(token.GetType);
+            //}
         }
 
         public static void Error(int line, string message) {
             Report(line, "", message);
+        }
+
+        public static void Error(Token token, string message) {
+            if (token.Type == TokenType.EOF) {
+                Report(token.Line, " at end", message);
+            }
+            else {
+                Report(token.Line, " at '" + token.Lexeme + "'", message);
+            }
         }
 
         static void Report(int line, string where, string message) {

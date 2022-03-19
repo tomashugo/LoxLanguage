@@ -33,7 +33,7 @@ namespace LoxLanguage {
         }
     }
     sealed class Literal : Expr {
-        public Object Value { get; } 
+        public Object? Value { get; } 
         public Literal (Object Value) {
             this.Value = Value;
         }

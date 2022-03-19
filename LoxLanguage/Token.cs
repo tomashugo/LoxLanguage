@@ -10,10 +10,10 @@
      * Most tokens never appear in an error message. For those, the less time you spend calculating position information ahead of time, the better.
      */
     internal class Token {
-        readonly TokenType Type;
+        public TokenType Type { get; }
         public string Lexeme { get; }
-        readonly object Literal;
-        readonly int Line;
+        public object Literal { get; }
+        public int Line { get; }
         public Token (TokenType type, string lexeme, object literal, int line) {
             Type = type;
             Lexeme = lexeme;

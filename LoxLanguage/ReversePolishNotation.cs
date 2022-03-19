@@ -38,14 +38,14 @@ namespace LoxLanguage {
             return sb.ToString();
         }
 
-        public static void Main(string[] args) {
-            Expr expression = new Binary(
-                new Binary(new Literal(1), new Token(TokenType.PLUS, "+", null, 1), new Literal(2)), 
-                new Token(TokenType.STAR, "*", null, 1),
-                new Binary(new Literal(4), new Token(TokenType.MINUS, "-", null, 1), new Literal(3))
-            );
+        //public static void Main(string[] args) {
+        //    Expr expression = new Binary(
+        //        new Binary(new Literal(1), new Token(TokenType.PLUS, "+", null, 1), new Literal(2)), 
+        //        new Token(TokenType.STAR, "*", null, 1),
+        //        new Binary(new Literal(4), new Token(TokenType.MINUS, "-", null, 1), new Literal(3))
+        //    );
 
-            Console.WriteLine(new ReversePolishNotation().Print(expression));
-        }
+        //    Console.WriteLine(new ReversePolishNotation().Print(expression));
+        //}
     }
 }
