@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LoxLanguage {
-    internal class AstPrinter : Visitor<string> {
+    internal class ReversePolishNotation : Visitor<string> {
         string Print(Expr expr) {
             return expr.Accept(this);
         }
@@ -25,30 +25,27 @@ namespace LoxLanguage {
         public string VisitUnaryExpr(Unary expr) {
             return Parenthesize(expr.Operator.Lexeme, expr.Right);
         }
-                
+
         private string Parenthesize(string name, params Expr[] exprs) {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("(").Append(name);
-            foreach (var expr in exprs) {
-                sb.Append(" ");
+            foreach (var expr in exprs) {                
                 sb.Append(expr.Accept(this));
+                sb.Append(" ");
             }
-            sb.Append(")");
+            sb.Append(name);
 
             return sb.ToString();
         }
 
-        //public static void Main(string[] args) {
-        //    Expr expression = new Binary(
-        //        new Unary (
-        //            new Token(TokenType.MINUS, "-", null, 1),
-        //            new Literal(123)),
-        //        new Token(TokenType.STAR, "*", null, 1),
-        //        new Grouping(new Literal(45.67))
-        //    );
+        public static void Main(string[] args) {
+            Expr expression = new Binary(
+                new Binary(new Literal(1), new Token(TokenType.PLUS, "+", null, 1), new Literal(2)), 
+                new Token(TokenType.STAR, "*", null, 1),
+                new Binary(new Literal(4), new Token(TokenType.MINUS, "-", null, 1), new Literal(3))
+            );
 
-        //    Console.WriteLine(new AstPrinter().Print(expression));
-        //}
+            Console.WriteLine(new ReversePolishNotation().Print(expression));
+        }
     }
 }
