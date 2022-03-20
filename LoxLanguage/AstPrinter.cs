@@ -13,6 +13,10 @@ namespace LoxLanguage {
             return Parenthesize(expr.Oper.Lexeme, expr.Left, expr.Right);
         }
 
+        public string VisitTernaryExpr(Ternary expr) {
+            return Parenthesize($"{expr.Oper.Lexeme}{expr.Oper2.Lexeme}", expr.Left, expr.Middle, expr.Right);
+        }
+
         public string VisitGroupingExpr(Grouping expr) {
             return Parenthesize("group", expr.Expression);
         }

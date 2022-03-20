@@ -4,9 +4,11 @@ namespace LoxLanguage {
     }
     interface Visitor<R> {
        R VisitBinaryExpr(Binary expr);
+       R VisitTernaryExpr(Ternary expr);
        R VisitGroupingExpr(Grouping expr);
        R VisitLiteralExpr(Literal expr);
        R VisitUnaryExpr(Unary expr);
+       
     }
     sealed class Binary : Expr {
         public Expr Left { get; }
@@ -20,6 +22,25 @@ namespace LoxLanguage {
 
         public override R Accept<R>(Visitor<R> visitor) {
             return visitor.VisitBinaryExpr(this);
+        }
+    }    
+    sealed class Ternary : Expr {
+        public Expr Left { get; }
+        public Expr Middle { get; }
+        public Expr Right { get; }
+        public Token Oper { get; }
+        public Token Oper2 { get; }
+
+        public Ternary(Expr left, Token oper, Expr middle, Token oper2, Expr right) {
+            this.Left = left;
+            this.Middle = middle;
+            this.Right = right;
+            this.Oper = oper;
+            this.Oper2 = oper2;
+        }
+
+        public override R Accept<R>(Visitor<R> visitor) {
+            return visitor.VisitTernaryExpr(this);
         }
     }
     sealed class Grouping : Expr {

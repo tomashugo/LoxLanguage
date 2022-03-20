@@ -2,7 +2,7 @@
  *  That is the grammar being implemented:
  *  
  *   expression     → equality ;
- *   equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+ *   equality       → comparison ( ( "!=" | "==" | "," ) comparison )* ;
  *   comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
  *   term           → factor ( ( "-" | "+" ) factor )* ;
  *   factor         → unary ( ( "/" | "*" ) unary )* ;
@@ -41,10 +41,23 @@ namespace LoxLanguage {
         private Expr Equality() {
             Expr expr = Comparison();
 
+            if (Peek().Type == TokenType.COLON) {
+                return expr;
+            }
+
             while(Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL, TokenType.COMMA)) {
                 Token oper = Previous();
                 Expr right = Comparison();
                 expr = new Binary(expr, oper, right);
+            }
+
+            while (Match(TokenType.QUESTION_MARK)) {
+                Token oper = Previous();
+                Expr middle = Comparison();
+                Token oper2 = Consume(TokenType.COLON, "Expect ':' after expression.");
+                Expr right = Comparison();
+
+                expr = new Ternary(expr, oper, middle, oper2, right);
             }
 
             return expr;
