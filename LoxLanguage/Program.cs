@@ -11,7 +11,9 @@ using System.Text;
 namespace LoxLanguage
 {
     internal class Lox {        
-        static bool HadError; // I did this on my own
+        private static Interpreter interpreter = new Interpreter();
+        static bool HadError = false; // I did this on my own
+        static bool HadRunTimeError = false;
         public static void Main(string[] args) {
             if (args.Length > 1) {
                 Console.WriteLine("Usage: jlox [script]");
@@ -29,6 +31,7 @@ namespace LoxLanguage
             Run(new string(chars));
 
             if (HadError) Environment.Exit(65);
+            if (HadRunTimeError) Environment.Exit(70);
         }
         private static void RunPrompt() {            
             TextReader reader = Console.In;
@@ -38,7 +41,7 @@ namespace LoxLanguage
                 #pragma warning disable CS8600 // Conversão de literal nula ou possível valor nulo em tipo não anulável.
                 string line = reader.ReadLine();
                 #pragma warning restore CS8600 // Conversão de literal nula ou possível valor nulo em tipo não anulável.
-                Console.WriteLine(line);
+                //Console.WriteLine(line);
 
                 if (line == null) break;
                 Run(line);
@@ -55,7 +58,9 @@ namespace LoxLanguage
 
             if (HadError) return;
 
-            Console.WriteLine(new AstPrinter().Print(expression));
+            interpreter.Interpret(expression);
+
+            //Console.WriteLine(new AstPrinter().Print(expression));
 
             //foreach (var token in tokens) {                
             //    Console.WriteLine(token.ToString());
@@ -74,6 +79,11 @@ namespace LoxLanguage
             else {
                 Report(token.Line, " at '" + token.Lexeme + "'", message);
             }
+        }
+
+        public static void RuntimeError(RuntimeError error) {
+            Console.WriteLine("[line " + error.Tk.Line + "] " + error.Message);
+            HadRunTimeError = true;
         }
 
         static void Report(int line, string where, string message) {

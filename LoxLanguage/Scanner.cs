@@ -44,7 +44,7 @@ namespace LoxLanguage {
         private void ScanToken() {
             char c = Advance();
 
-            switch (c) {
+            switch (c) {                
                 case '(': AddToken(TokenType.LEFT_PAREN); break;
                 case ')': AddToken(TokenType.RIGHT_PAREN); break;
                 case '{': AddToken(TokenType.LEFT_BRACE); break;
@@ -75,6 +75,8 @@ namespace LoxLanguage {
                         while (Peek() != '\n' && !IsAtEnd()) Advance();
                     } else if (Match('*')) {
                         MultiLineComment();
+                    } else {
+                        AddToken(TokenType.SLASH);
                     }
                     break;
                 case ' ':
