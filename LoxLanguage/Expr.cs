@@ -1,7 +1,6 @@
 namespace LoxLanguage {
     abstract class Expr {
         public abstract R Accept<R>(Visitor<R> visitor);
-
         public interface Visitor<R> {
             R VisitBinaryExpr(Binary expr);
             R VisitTernaryExpr(Ternary expr);
@@ -9,7 +8,20 @@ namespace LoxLanguage {
             R VisitLiteralExpr(Literal expr);
             R VisitUnaryExpr(Unary expr);
             R VisitVariableExpr(Variable expr);
+            R VisitAssignExpr(Assign expr);
         }
+        public class Assign : Expr {
+            public Token Name { get; }
+            public Expr Value { get; }
+            public Assign (Token name, Expr value) {
+                Name = name;
+                Value = value;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitAssignExpr(this);
+            }
+        }
+
         public class Binary : Expr {
             public Expr Left { get; }
             public Token Oper { get; }
@@ -19,7 +31,6 @@ namespace LoxLanguage {
                 this.Oper = Oper;
                 this.Right = Right;
             }
-
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitBinaryExpr(this);
             }

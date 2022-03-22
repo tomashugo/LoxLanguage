@@ -11,7 +11,9 @@
  *                    | printStmt ;
  *   exprStmt       → expression ";" ;
  *   printStmt      → "print" expression ";" ;
- *   expression     → equality ;
+ *   expression     → assignment ;
+ *   assignment     → IDENTIFIER "=" assignment
+ *                  | equality ;
  *   equality       → comparison ( ( "!=" | "==" | "," ) comparison )* ;
  *   comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
  *   term           → factor ( ( "-" | "+" ) factor )* ;
@@ -46,7 +48,7 @@ namespace LoxLanguage {
 
         // expression → equality ;
         private Expr Expression() {
-            return Equality();
+            return Assignment();
         }
 
         private Stmt Declaration() {
@@ -90,6 +92,24 @@ namespace LoxLanguage {
             Expr expr = Expression();
             Consume(TokenType.SEMICOLON, "Expect ';' after expression");
             return new Stmt.Expression(expr);
+        }
+
+        private Expr Assignment() {
+            Expr expr = Equality();
+
+            if (Match(TokenType.EQUAL)) {
+                Token equals = Previous();
+                Expr value = Assignment();
+
+                if (expr is Expr.Variable) {
+                    Token name = ((Expr.Variable)expr).Name;
+                    return new Expr.Assign(name, value);
+                }
+
+                Error(equals, "Invalid assignment target.");
+            }
+
+            return expr;
         }
 
         // equality → comparison ( ( "!=" | "==" | "," ) comparison )* ;

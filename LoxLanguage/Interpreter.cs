@@ -195,5 +195,11 @@ namespace LoxLanguage {
             Env.Define(stmt.Name.Lexeme, value);
             return null;
         }
+
+        public object VisitAssignExpr(Expr.Assign expr) {
+            Object value = Evaluate(expr.Value);
+            Env.Assign(expr.Name, value);          
+            return value;
+        }
     }
 }
