@@ -54,11 +54,17 @@ namespace LoxLanguage
             List<Token> tokens = scanner.ScanTokens();
 
             Parser parser = new Parser(tokens);
-            List<Stmt> statements = parser.Parse();
 
-            if (HadError) return;
+            try {
+                List<Stmt> statements = parser.Parse();
+                if (HadError) return;
 
-            interpreter.Interpret(statements);
+                interpreter.Interpret(statements);
+            }
+            catch (ParseError parseError) {
+                Console.WriteLine(parseError.Message);
+            }
+
 
             //Console.WriteLine(new AstPrinter().Print(expression));
 
@@ -84,7 +90,7 @@ namespace LoxLanguage
         public static void RuntimeError(RuntimeError error) {
             Console.WriteLine("[line " + error.Tk.Line + "] " + error.Message);
             HadRunTimeError = true;
-        }
+        }        
 
         static void Report(int line, string where, string message) {
             Console.WriteLine($"[line {line}] Error {where}: {message}");

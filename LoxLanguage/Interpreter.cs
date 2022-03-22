@@ -69,8 +69,6 @@ namespace LoxLanguage {
             }
             catch (RuntimeError error) {
                 Lox.RuntimeError(error);
-            } catch (ParseError parseError) {
-                
             }
 
             //try {
