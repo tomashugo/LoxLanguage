@@ -5,28 +5,28 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LoxLanguage {
-    internal class AstPrinter : Visitor<string> {
+    internal class AstPrinter : Expr.Visitor<string> {
         public string Print(Expr expr) {
             return expr.Accept(this);
         }
-        public string VisitBinaryExpr(Binary expr) {
+        public string VisitBinaryExpr(Expr.Binary expr) {
             return Parenthesize(expr.Oper.Lexeme, expr.Left, expr.Right);
         }
 
-        public string VisitTernaryExpr(Ternary expr) {
+        public string VisitTernaryExpr(Expr.Ternary expr) {
             return Parenthesize($"{expr.Oper.Lexeme}{expr.Oper2.Lexeme}", expr.Left, expr.Middle, expr.Right);
         }
 
-        public string VisitGroupingExpr(Grouping expr) {
+        public string VisitGroupingExpr(Expr.Grouping expr) {
             return Parenthesize("group", expr.Expression);
         }
 
-        public string VisitLiteralExpr(Literal expr) {
+        public string VisitLiteralExpr(Expr.Literal expr) {
             if (expr.Value == null) return "nil";
             return expr.Value.ToString();
         }
 
-        public string VisitUnaryExpr(Unary expr) {
+        public string VisitUnaryExpr(Expr.Unary expr) {
             return Parenthesize(expr.Operator.Lexeme, expr.Right);
         }
                 
@@ -41,6 +41,14 @@ namespace LoxLanguage {
             sb.Append(")");
 
             return sb.ToString();
+        }
+
+        public string VisitExpressionStmt(Stmt stmt) {
+            throw new NotImplementedException();
+        }
+
+        public string VisitPrintStmt(Stmt.Print prnt) {
+            throw new NotImplementedException();
         }
 
         //public static void Main(string[] args) {

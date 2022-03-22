@@ -54,11 +54,11 @@ namespace LoxLanguage
             List<Token> tokens = scanner.ScanTokens();
 
             Parser parser = new Parser(tokens);
-            Expr expression = parser.Parse();
+            List<Stmt> statements = parser.Parse();
 
             if (HadError) return;
 
-            interpreter.Interpret(expression);
+            interpreter.Interpret(statements);
 
             //Console.WriteLine(new AstPrinter().Print(expression));
 

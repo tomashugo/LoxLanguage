@@ -8,11 +8,16 @@ using System.IO;
 namespace LoxLanguage.tool {
     class GenerateAst {
         public static void Main(string[] args) {          
-            DefineAst(Path.Combine("..","..",".."), "Expr", new List<string> {
-                "Binary   : Expr Left, Token Oper, Expr Right",
-                "Grouping : Expr Expression",
-                "Literal  : Object Value",
-                "Unary    : Token Operator, Expr Right"
+            //DefineAst(Path.Combine("..","..",".."), "Expr", new List<string> {
+            //    "Binary   : Expr Left, Token Oper, Expr Right",
+            //    "Grouping : Expr Expression",
+            //    "Literal  : Object Value",
+            //    "Unary    : Token Operator, Expr Right"
+            //});
+
+            DefineAst(Path.Combine("..", "..", ".."), "Stmt", new List<string> {
+                "Expression   : Expr expression",
+                "Print: Expr Expression"                
             });
         }
         public static void DefineAst(string outputDir, string baseName, List<string> types) {         

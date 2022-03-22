@@ -1,6 +1,13 @@
 ﻿/*
  *  That is the grammar being implemented:
  *  
+ *  
+ *  
+ *   program        → statement* EOF ;
+ *   statement      → exprStmt
+ *                    | printStmt ;
+ *   exprStmt       → expression ";" ;
+ *   printStmt      → "print" expression ";" ;
  *   expression     → equality ;
  *   equality       → comparison ( ( "!=" | "==" | "," ) comparison )* ;
  *   comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -23,18 +30,37 @@ namespace LoxLanguage {
             this.Tokens = tokens;
         }
 
-        public Expr? Parse() {
-            try {
-                return Expression();
+        public List<Stmt>? Parse() {
+            List<Stmt> statements = new List<Stmt>();
+
+            while(!IsAtEnd()) {
+                statements.Add(Statement());
             }
-            catch (ParseError) {
-                return null;
-            }
+
+            return statements;            
         }
 
         // expression → equality ;
         private Expr Expression() {
             return Equality();
+        }
+
+        private Stmt Statement() {
+            if (Match(TokenType.PRINT)) return PrintStatement();
+
+            return ExpressionStatement();
+        }
+
+        private Stmt PrintStatement() {
+            Expr value = Expression();
+            Consume(TokenType.SEMICOLON, "Expect ';' after value");
+            return new Stmt.Print(value);
+        }
+
+        private Stmt ExpressionStatement() {
+            Expr expr = Expression();
+            Consume(TokenType.SEMICOLON, "Expect ';' after expression");
+            return new Stmt.Expression(expr);
         }
 
         // equality → comparison ( ( "!=" | "==" | "," ) comparison )* ;
@@ -48,7 +74,7 @@ namespace LoxLanguage {
             while(Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL, TokenType.COMMA)) {
                 Token oper = Previous();
                 Expr right = Comparison();
-                expr = new Binary(expr, oper, right);
+                expr = new Expr.Binary(expr, oper, right);
             }
 
             while (Match(TokenType.QUESTION_MARK)) {
@@ -57,7 +83,7 @@ namespace LoxLanguage {
                 Token oper2 = Consume(TokenType.COLON, "Expect ':' after expression.");
                 Expr right = Comparison();
 
-                expr = new Ternary(expr, oper, middle, oper2, right);
+                expr = new Expr.Ternary(expr, oper, middle, oper2, right);
             }
 
             return expr;
@@ -70,7 +96,7 @@ namespace LoxLanguage {
             while (Match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
                 Token oper = Previous();
                 Expr right = Term();
-                expr = new Binary(expr, oper, right);
+                expr = new Expr.Binary(expr, oper, right);
             }
 
             return expr;
@@ -83,7 +109,7 @@ namespace LoxLanguage {
             while (Match(TokenType.MINUS, TokenType.PLUS)) {
                 Token oper = Previous();
                 Expr right = Factor();
-                expr = new Binary(expr, oper, right);
+                expr = new Expr.Binary(expr, oper, right);
             }
 
             return expr;
@@ -96,7 +122,7 @@ namespace LoxLanguage {
             while (Match(TokenType.SLASH, TokenType.STAR)) {
                 Token oper = Previous();
                 Expr right = Unary();
-                expr = new Binary(expr, oper, right);
+                expr = new Expr.Binary(expr, oper, right);
             }
 
             return expr;
@@ -110,7 +136,7 @@ namespace LoxLanguage {
             if (Match(TokenType.BANG, TokenType.MINUS)) {
                 Token oper = Previous();
                 Expr right = Unary();
-                return new Unary(oper, right);
+                return new Expr.Unary(oper, right);
             }
 
             return Primary();
@@ -121,26 +147,26 @@ namespace LoxLanguage {
            */
         private Expr Primary() {
             if (Match(TokenType.FALSE)) {
-                return new Literal(false);
+                return new Expr.Literal(false);
             }
 
             if (Match(TokenType.TRUE)) { 
-                return new Literal(true);                
+                return new Expr.Literal(true);                
             }
 
 
             if (Match(TokenType.NIL)) {
-                return new Literal(null);
+                return new Expr.Literal(null);
             }
 
             if (Match(TokenType.NUMBER, TokenType.STRING)) {
-                return new Literal(Previous().Literal);              
+                return new Expr.Literal(Previous().Literal);              
             }
 
             if (Match(TokenType.LEFT_PAREN)) {
                 Expr expr = Expression(); // Calling recursively a new expression
                 Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
-                return new Grouping(expr);
+                return new Expr.Grouping(expr);
             }            
 
             throw Error(Peek(), "Expect expression.");

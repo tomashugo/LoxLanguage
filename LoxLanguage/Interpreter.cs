@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LoxLanguage {
-    internal class Interpreter : Visitor<Object> {
-        public object VisitBinaryExpr(Binary expr) {
+    internal class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object> {
+        public object VisitBinaryExpr(Expr.Binary expr) {
             object left = Evaluate(expr.Left);
             object right = Evaluate(expr.Right);
 
@@ -61,17 +61,28 @@ namespace LoxLanguage {
             return null;
         }
 
-        public void Interpret(Expr expression) {
+        public void Interpret(List<Stmt> statements) {
             try {
-                Object value = Evaluate(expression);
-                Console.WriteLine(Stringify(value));
+                foreach (var stmt in statements) {
+                    Execute(stmt);
+                }
             }
             catch (RuntimeError error) {
                 Lox.RuntimeError(error);
+            } catch (ParseError parseError) {
+                
             }
+
+            //try {
+            //    Object value = Evaluate(expression);
+            //    Console.WriteLine(Stringify(value));
+            //}
+            //catch (RuntimeError error) {
+            //    Lox.RuntimeError(error);
+            //}
         }
 
-        public object VisitGroupingExpr(Grouping expr) {
+        public object VisitGroupingExpr(Expr.Grouping expr) {
             return Evaluate(expr.Expression);
         }
 
@@ -79,11 +90,15 @@ namespace LoxLanguage {
             return expr.Accept(this);
         }
 
-        public object VisitLiteralExpr(Literal expr) {
+        private void Execute(Stmt stmt) {
+            stmt.Accept(this);
+        }
+
+        public object VisitLiteralExpr(Expr.Literal expr) {
             return expr.Value;
         }
 
-        public object VisitTernaryExpr(Ternary expr) {            
+        public object VisitTernaryExpr(Expr.Ternary expr) {            
             object left = Evaluate(expr.Left);
             object middle = Evaluate(expr.Middle);
             object right = Evaluate(expr.Right);
@@ -103,7 +118,7 @@ namespace LoxLanguage {
             return null;
         }
 
-        public object VisitUnaryExpr(Unary expr) {
+        public object VisitUnaryExpr(Expr.Unary expr) {
             object right = Evaluate(expr.Right);
 
             switch (expr.Operator.Type) {
@@ -153,6 +168,17 @@ namespace LoxLanguage {
             }
 
             return Convert.ToString(obj);
+        }        
+
+        public object VisitExpressionStmt(Stmt.Expression stmt) {
+            Evaluate(stmt.expr);
+            return null;
+        }
+
+        public object VisitPrintStmt(Stmt.Print stmt) {
+            object value = Evaluate(stmt.Expression);
+            Console.WriteLine(Stringify(value));
+            return null;
         }
     }
 }

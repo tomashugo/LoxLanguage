@@ -5,24 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LoxLanguage {
-    internal class ReversePolishNotation : Visitor<string> {
+    internal class ReversePolishNotation : Expr.Visitor<string> {
         string Print(Expr expr) {
             return expr.Accept(this);
         }
-        public string VisitBinaryExpr(Binary expr) {
+        public string VisitBinaryExpr(Expr.Binary expr) {
             return Parenthesize(expr.Oper.Lexeme, expr.Left, expr.Right);
         }
 
-        public string VisitGroupingExpr(Grouping expr) {
+        public string VisitGroupingExpr(Expr.Grouping expr) {
             return Parenthesize("group", expr.Expression);
         }
 
-        public string VisitLiteralExpr(Literal expr) {
+        public string VisitLiteralExpr(Expr.Literal expr) {
             if (expr.Value == null) return "nil";
             return expr.Value.ToString();
         }
 
-        public string VisitUnaryExpr(Unary expr) {
+        public string VisitUnaryExpr(Expr.Unary expr) {
             return Parenthesize(expr.Operator.Lexeme, expr.Right);
         }
 
@@ -38,7 +38,15 @@ namespace LoxLanguage {
             return sb.ToString();
         }
 
-        public string VisitTernaryExpr(Ternary expr) {
+        public string VisitTernaryExpr(Expr.Ternary expr) {
+            throw new NotImplementedException();
+        }
+
+        public string VisitExpressionStmt(Stmt stmt) {
+            throw new NotImplementedException();
+        }
+
+        public string VisitPrintStmt(Stmt.Print prnt) {
             throw new NotImplementedException();
         }
 
