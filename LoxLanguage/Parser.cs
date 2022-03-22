@@ -3,7 +3,10 @@
  *  
  *  
  *  
- *   program        → statement* EOF ;
+ *   program        → declaration* EOF ;
+ *   declaration    → varDecl
+ *                  | statement ;
+ *   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  *   statement      → exprStmt
  *                    | printStmt ;
  *   exprStmt       → expression ";" ;
@@ -16,7 +19,8 @@
  *   unary          → ( "!" | "-" ) unary
  *                  | primary ;
  *   primary        → NUMBER | STRING | "true" | "false" | "nil"
- *                  | "(" expression ")" ;
+ *                  | "(" expression ")" 
+ *                  | IDENTIFIER ;
  *
  */
 
@@ -34,7 +38,7 @@ namespace LoxLanguage {
             List<Stmt> statements = new List<Stmt>();
 
             while(!IsAtEnd()) {
-                statements.Add(Statement());
+                statements.Add(Declaration());
             }
 
             return statements;            
@@ -43,6 +47,18 @@ namespace LoxLanguage {
         // expression → equality ;
         private Expr Expression() {
             return Equality();
+        }
+
+        private Stmt Declaration() {
+            try {
+                if (Match(TokenType.VAR)) return VarDeclaration();
+
+                return Statement();
+            }
+            catch (ParseError error) {
+                Synchronize();
+                return null;
+            }
         }
 
         private Stmt Statement() {
@@ -56,6 +72,19 @@ namespace LoxLanguage {
             Consume(TokenType.SEMICOLON, "Expect ';' after value");
             return new Stmt.Print(value);
         }
+
+        private Stmt VarDeclaration() {
+            Token name = Consume(TokenType.IDENTIFIER, "Exepct variable name");
+
+            Expr initializer = null;
+            if (Match(TokenType.EQUAL)) {
+                initializer = Expression();
+            }
+
+            Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+            return new Stmt.Var(name, initializer);
+        }
+            
 
         private Stmt ExpressionStatement() {
             Expr expr = Expression();
@@ -163,11 +192,15 @@ namespace LoxLanguage {
                 return new Expr.Literal(Previous().Literal);              
             }
 
+            if (Match(TokenType.IDENTIFIER)) {
+                return new Expr.Variable(Previous());
+            }
+
             if (Match(TokenType.LEFT_PAREN)) {
                 Expr expr = Expression(); // Calling recursively a new expression
                 Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
                 return new Expr.Grouping(expr);
-            }            
+            }                        
 
             throw Error(Peek(), "Expect expression.");
         }

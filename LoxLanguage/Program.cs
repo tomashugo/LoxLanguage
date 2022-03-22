@@ -17,7 +17,7 @@ namespace LoxLanguage
         public static void Main(string[] args) {
             if (args.Length > 1) {
                 Console.WriteLine("Usage: jlox [script]");
-                Environment.Exit(64);
+                System.Environment.Exit(64);
             } else if (args.Length == 1) {
                 RunFile(args[0]);
             } else {
@@ -30,8 +30,8 @@ namespace LoxLanguage
 
             Run(new string(chars));
 
-            if (HadError) Environment.Exit(65);
-            if (HadRunTimeError) Environment.Exit(70);
+            if (HadError) System.Environment.Exit(65);
+            if (HadRunTimeError) System.Environment.Exit(70);
         }
         private static void RunPrompt() {            
             TextReader reader = Console.In;

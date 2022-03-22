@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace LoxLanguage {
     internal class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object> {
+        private Environment Env = new Environment();
         public object VisitBinaryExpr(Expr.Binary expr) {
             object left = Evaluate(expr.Left);
             object right = Evaluate(expr.Right);
@@ -130,6 +131,11 @@ namespace LoxLanguage {
             // Unreachable
             return null;
         }
+
+        public object VisitVariableExpr(Expr.Variable expr) {
+            return Env.Get(expr.Name);
+        }
+
         private void CheckNumberOperand(Token oper, object operand) {
             if (operand is double) return;
             throw new RuntimeError(oper, "Operand '" + operand + "' must be a number");
@@ -176,6 +182,17 @@ namespace LoxLanguage {
         public object VisitPrintStmt(Stmt.Print stmt) {
             object value = Evaluate(stmt.Expression);
             Console.WriteLine(Stringify(value));
+            return null;
+        }
+
+        public object VisitVarStmt(Stmt.Var stmt) {
+            object value = null;
+
+            if (stmt.Initializer != null) {
+                value = Evaluate(stmt.Initializer);
+            }
+
+            Env.Define(stmt.Name.Lexeme, value);
             return null;
         }
     }

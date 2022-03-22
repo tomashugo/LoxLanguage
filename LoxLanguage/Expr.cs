@@ -7,7 +7,8 @@ namespace LoxLanguage {
             R VisitTernaryExpr(Ternary expr);
             R VisitGroupingExpr(Grouping expr);
             R VisitLiteralExpr(Literal expr);
-            R VisitUnaryExpr(Unary expr);            
+            R VisitUnaryExpr(Unary expr);
+            R VisitVariableExpr(Variable expr);
         }
         public class Binary : Expr {
             public Expr Left { get; }
@@ -72,6 +73,16 @@ namespace LoxLanguage {
 
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitUnaryExpr(this);
+            }
+        }
+
+        public class Variable : Expr {
+            public Token Name { get; }
+            public Variable(Token name) {
+                Name = name;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitVariableExpr(this);
             }
         }
 

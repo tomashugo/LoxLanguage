@@ -1,10 +1,11 @@
 namespace LoxLanguage {
     abstract class Stmt {
         public abstract R Accept<R>(Visitor<R> visitor);
-    
+
         public interface Visitor<R> {
             R VisitExpressionStmt(Expression stmt);
             R VisitPrintStmt(Print stmt);
+            R VisitVarStmt(Var var);
         }
         public class Expression : Stmt {
             public Expr expr { get; }
@@ -18,12 +19,26 @@ namespace LoxLanguage {
         }
         public class Print : Stmt {
             public Expr Expression { get; }
-            public Print (Expr Expression) {
+            public Print(Expr Expression) {
                 this.Expression = Expression;
             }
 
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitPrintStmt(this);
+            }
+        }
+
+        public class Var : Stmt {
+            public Token Name { get; }
+            public Expr Initializer { get; }
+
+            public Var(Token name, Expr initializer) {
+                Name = name;
+                Initializer = initializer;
+            }
+
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitVarStmt(this);
             }
         }
     }
