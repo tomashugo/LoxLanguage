@@ -25,7 +25,7 @@ namespace LoxLanguage {
         
         public void Assign(Token name, object value) {
             if (Values.ContainsKey(name.Lexeme)) {
-                Values.Add(name.Lexeme, value);
+                Values[name.Lexeme] = value;
                 return;
             }
 
