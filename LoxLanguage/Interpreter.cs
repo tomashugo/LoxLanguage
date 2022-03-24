@@ -240,6 +240,13 @@ namespace LoxLanguage {
             return null;
         }
 
+        public object VisitWhileStmt(Stmt.While stmt) {
+            while (IsTruthy(Evaluate(stmt.Condition))) {
+                Execute(stmt.Body);
+            }
+            return null;
+        }
+
         public object VisitAssignExpr(Expr.Assign expr) {
             Object value = Evaluate(expr.Value);
             Env.Assign(expr.Name, value);          

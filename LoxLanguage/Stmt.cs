@@ -5,9 +5,10 @@ namespace LoxLanguage {
         public interface Visitor<R> {
             R VisitExpressionStmt(Expression stmt);
             R VisitPrintStmt(Print stmt);
-            R VisitVarStmt(Var var);
-            R VisitBlockStmt(Block block);
-            R VisitIfStmt(If _if);
+            R VisitVarStmt(Var stmt);
+            R VisitBlockStmt(Block stmt);
+            R VisitIfStmt(If stmt);
+            R VisitWhileStmt(While stmt);
         }
         public class Block : Stmt {
             public List<Stmt> Statements;
@@ -65,6 +66,20 @@ namespace LoxLanguage {
 
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitVarStmt(this);
+            }
+        }
+
+        public class While : Stmt {
+            public Expr Condition { get; }
+            public Stmt Body { get; }
+
+            public While(Expr condition, Stmt body ) {
+                Condition = condition;
+                Body = body;
+            }
+
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitWhileStmt(this);
             }
         }
     }
