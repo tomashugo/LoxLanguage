@@ -70,15 +70,7 @@ namespace LoxLanguage {
             }
             catch (RuntimeError error) {
                 Lox.RuntimeError(error);
-            }
-
-            //try {
-            //    Object value = Evaluate(expression);
-            //    Console.WriteLine(Stringify(value));
-            //}
-            //catch (RuntimeError error) {
-            //    Lox.RuntimeError(error);
-            //}
+            }            
         }
 
         public object VisitGroupingExpr(Expr.Grouping expr) {
@@ -208,7 +200,8 @@ namespace LoxLanguage {
         }        
 
         public object VisitExpressionStmt(Stmt.Expression stmt) {
-            Console.WriteLine(Evaluate(stmt.expr));             
+            // Console.WriteLine(Evaluate(stmt.expr));
+            Evaluate(stmt.expr);
             return null;
         }
 
