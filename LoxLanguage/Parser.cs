@@ -8,7 +8,9 @@
  *                  | statement ;
  *   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  *   statement      → exprStmt
- *                    | printStmt ;
+ *                    | printStmt 
+ *                    | block ;
+ *   block          → "{" declaration* "}" ;
  *   exprStmt       → expression ";" ;
  *   printStmt      → "print" expression ";" ;
  *   expression     → assignment ;
@@ -65,6 +67,7 @@ namespace LoxLanguage {
 
         private Stmt Statement() {
             if (Match(TokenType.PRINT)) return PrintStatement();
+            if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
 
             return ExpressionStatement();
         }
@@ -85,8 +88,7 @@ namespace LoxLanguage {
 
             Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
             return new Stmt.Var(name, initializer);
-        }
-            
+        }            
 
         private Stmt ExpressionStatement() {
             Expr expr = Expression();
@@ -94,6 +96,16 @@ namespace LoxLanguage {
             return new Stmt.Expression(expr);
         }
 
+        private List<Stmt> Block() {
+            List<Stmt> statements = new List<Stmt> ();
+
+            while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd()) {
+                statements.Add(Declaration());
+            }
+
+            Consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+            return statements;
+        }
         private Expr Assignment() {
             Expr expr = Equality();
 

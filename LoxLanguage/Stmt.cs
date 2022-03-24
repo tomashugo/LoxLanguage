@@ -6,6 +6,17 @@ namespace LoxLanguage {
             R VisitExpressionStmt(Expression stmt);
             R VisitPrintStmt(Print stmt);
             R VisitVarStmt(Var var);
+            R VisitBlockStmt(Block block);
+        }
+        public class Block : Stmt {
+            public List<Stmt> Statements;
+
+            public Block(List<Stmt> statements) {
+                Statements = statements;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitBlockStmt(this);
+            }
         }
         public class Expression : Stmt {
             public Expr expr { get; }

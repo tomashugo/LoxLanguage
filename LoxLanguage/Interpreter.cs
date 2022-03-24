@@ -92,6 +92,26 @@ namespace LoxLanguage {
         private void Execute(Stmt stmt) {
             stmt.Accept(this);
         }
+        
+        public void ExecuteBlock(List<Stmt> statements, Environment environment) {
+            Environment previous = Env;
+
+            try {
+                Env = environment;
+
+                foreach (var statement in statements) {
+                    Execute(statement);
+                }
+            }
+            finally {
+                Env = previous; 
+            }
+        }
+
+        public object VisitBlockStmt(Stmt.Block stmt) {
+            ExecuteBlock(stmt.Statements, new Environment(Env));
+            return null;
+        }
 
         public object VisitLiteralExpr(Expr.Literal expr) {
             return expr.Value;
@@ -175,7 +195,7 @@ namespace LoxLanguage {
         }        
 
         public object VisitExpressionStmt(Stmt.Expression stmt) {
-            Evaluate(stmt.expr);
+            Console.WriteLine(Evaluate(stmt.expr));             
             return null;
         }
 
@@ -201,5 +221,6 @@ namespace LoxLanguage {
             Env.Assign(expr.Name, value);          
             return value;
         }
+        
     }
 }
