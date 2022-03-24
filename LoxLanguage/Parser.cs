@@ -8,14 +8,19 @@
  *                  | statement ;
  *   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  *   statement      → exprStmt
+ *                    | ifStmt 
  *                    | printStmt 
  *                    | block ;
+ *   ifStmt         → "if" "(" expression ")" statement
+ *                    ( "else" statement )? ;
  *   block          → "{" declaration* "}" ;
  *   exprStmt       → expression ";" ;
  *   printStmt      → "print" expression ";" ;
  *   expression     → assignment ;
  *   assignment     → IDENTIFIER "=" assignment
- *                  | equality ;
+ *                  | logic_or ;
+ *   logic_or       → logic_and ( "or" logic_and )* ;
+ *   logic_and      → equality ( "and" equality )* ;
  *   equality       → comparison ( ( "!=" | "==" | "," ) comparison )* ;
  *   comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
  *   term           → factor ( ( "-" | "+" ) factor )* ;
@@ -66,10 +71,26 @@ namespace LoxLanguage {
         }
 
         private Stmt Statement() {
+            if (Match(TokenType.IF)) return IfStatement();
             if (Match(TokenType.PRINT)) return PrintStatement();
             if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
 
             return ExpressionStatement();
+        }
+
+        private Stmt IfStatement() {
+            Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'");
+            Expr condition = Expression();
+            Consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+
+            Stmt thenBranch = Statement();
+            Stmt elseBranch = null;
+
+            if (Match(TokenType.ELSE)) {
+                elseBranch = Statement();
+            }
+
+            return new Stmt.If(condition, thenBranch, elseBranch);  
         }
 
         private Stmt PrintStatement() {
@@ -107,7 +128,7 @@ namespace LoxLanguage {
             return statements;
         }
         private Expr Assignment() {
-            Expr expr = Equality();
+            Expr expr = Or();
 
             if (Match(TokenType.EQUAL)) {
                 Token equals = Previous();
@@ -124,6 +145,30 @@ namespace LoxLanguage {
             return expr;
         }
 
+        private Expr Or() {
+            Expr expr = And();
+
+            while (Match(TokenType.OR)) {
+                Token oper = Previous();
+                Expr right = And();
+                expr = new Expr.Logical(expr, oper, right);
+            }
+
+            return expr;
+        }
+
+        private Expr And() {
+            Expr expr = Equality();
+
+            while (Match(TokenType.AND)) {
+                Token oper = Previous();
+                Expr right = Equality();
+                expr = new Expr.Logical(expr, oper, right);
+            }
+
+            return expr;
+        }
+
         // equality → comparison ( ( "!=" | "==" | "," ) comparison )* ;
         private Expr Equality() {
             Expr expr = Comparison();
@@ -132,7 +177,7 @@ namespace LoxLanguage {
                 return expr;
             }
 
-            while(Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL, TokenType.COMMA)) {
+            while (Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL, TokenType.COMMA)) {
                 Token oper = Previous();
                 Expr right = Comparison();
                 expr = new Expr.Binary(expr, oper, right);

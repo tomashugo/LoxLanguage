@@ -59,6 +59,10 @@ namespace LoxLanguage {
             throw new NotImplementedException();
         }
 
+        public string VisitLogicalExpr(Expr.Logical logical) {
+            throw new NotImplementedException();
+        }
+
         //public static void Main(string[] args) {
         //    Expr expression = new Binary(
         //        new Unary (

@@ -9,6 +9,7 @@ namespace LoxLanguage {
             R VisitUnaryExpr(Unary expr);
             R VisitVariableExpr(Variable expr);
             R VisitAssignExpr(Assign expr);
+            R VisitLogicalExpr(Logical logical);
         }
         public class Assign : Expr {
             public Token Name { get; }
@@ -72,6 +73,19 @@ namespace LoxLanguage {
 
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitLiteralExpr(this);
+            }
+        }
+        public class Logical : Expr {
+            public Expr Left { get; }
+            public Token Oper { get; }
+            public Expr Right { get; }
+            public Logical(Expr Left, Token Oper, Expr Right) {
+                this.Left = Left;
+                this.Oper = Oper;
+                this.Right = Right;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitLogicalExpr(this);
             }
         }
         public class Unary : Expr {

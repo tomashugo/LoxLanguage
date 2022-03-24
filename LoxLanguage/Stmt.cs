@@ -7,6 +7,7 @@ namespace LoxLanguage {
             R VisitPrintStmt(Print stmt);
             R VisitVarStmt(Var var);
             R VisitBlockStmt(Block block);
+            R VisitIfStmt(If _if);
         }
         public class Block : Stmt {
             public List<Stmt> Statements;
@@ -26,6 +27,20 @@ namespace LoxLanguage {
 
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitExpressionStmt(this);
+            }
+        }
+        public class If : Stmt {
+            public Expr Condition { get; }
+            public Stmt ThenBranch { get;  }
+            public Stmt? ElseBranch { get; }
+
+            public If (Expr condition, Stmt thenBranch, Stmt elseBranch) {
+                Condition = condition;
+                ThenBranch = thenBranch;
+                ElseBranch = elseBranch;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitIfStmt(this);
             }
         }
         public class Print : Stmt {

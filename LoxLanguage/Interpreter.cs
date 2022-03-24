@@ -56,7 +56,7 @@ namespace LoxLanguage {
                     return !IsEqual(left, right);
 
                 case TokenType.EQUAL_EQUAL:
-                    return !IsEqual(left, right);
+                    return IsEqual(left, right);
             }
 
             return null;
@@ -115,6 +115,19 @@ namespace LoxLanguage {
 
         public object VisitLiteralExpr(Expr.Literal expr) {
             return expr.Value;
+        }
+
+        public object VisitLogicalExpr(Expr.Logical expr) {
+            object left = Evaluate(expr.Left);
+
+            if (expr.Oper.Type == TokenType.OR) {
+                if (IsTruthy(left)) return left;
+            }
+            else {
+                if (!IsTruthy(left)) return left;
+            }
+
+            return Evaluate(expr.Right);
         }
 
         public object VisitTernaryExpr(Expr.Ternary expr) {            
@@ -196,6 +209,17 @@ namespace LoxLanguage {
 
         public object VisitExpressionStmt(Stmt.Expression stmt) {
             Console.WriteLine(Evaluate(stmt.expr));             
+            return null;
+        }
+
+        public object VisitIfStmt(Stmt.If stmt) {
+            if (IsTruthy(Evaluate(stmt.Condition))) {
+                Execute(stmt.ThenBranch);
+            }
+            else if (stmt.ElseBranch != null) {
+                Execute(stmt.ElseBranch);
+            }
+
             return null;
         }
 
