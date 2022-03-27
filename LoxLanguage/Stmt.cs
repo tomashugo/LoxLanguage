@@ -10,6 +10,7 @@ namespace LoxLanguage {
             R VisitIfStmt(If stmt);
             R VisitWhileStmt(While stmt);
             R VisitFunctionStmt(Function stmt);
+            R VisitReturnStmt(Return stmt);
         }
         public class Block : Stmt {
             public List<Stmt> Statements;
@@ -69,6 +70,21 @@ namespace LoxLanguage {
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitPrintStmt(this);
             }
+        }
+
+        public class Return : Stmt {
+            public Token Keyword { get; }
+            public Expr Value { get; }
+
+            public Return (Token keyword, Expr value) {
+                Keyword = keyword;
+                Value = value;
+            }
+
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitReturnStmt(this);
+            }
+
         }
 
         public class Var : Stmt {

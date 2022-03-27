@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 namespace LoxLanguage {
     class LoxFunction : LoxCallable {
         private Stmt.Function Declaration;
-        public LoxFunction(Stmt.Function declaration) {
+        private readonly Environment Closure;
+        public LoxFunction(Stmt.Function declaration, Environment closure) {
             Declaration = declaration;
+            Closure = closure;
         }
 
         /*
@@ -16,13 +18,18 @@ namespace LoxLanguage {
          * 
          */
         public object Call(Interpreter interpreter, List<Object> arguments) {
-            Environment environment = new Environment(interpreter.Globals);
+            Environment environment = new Environment(Closure);
 
             for (var i = 0; i < Declaration.Params.Count; i++) {
                 environment.Define(Declaration.Params[i].Lexeme, arguments[i]);
             }
 
-            interpreter.ExecuteBlock(Declaration.Body, environment);
+            try {
+                interpreter.ExecuteBlock(Declaration.Body, environment);
+            } catch (Return returnValue) {
+                return returnValue.Value;
+            }
+           
             return null;
         }
 

@@ -260,7 +260,7 @@
         }
 
         public object VisitFunctionStmt(Stmt.Function stmt) {
-            LoxFunction function = new LoxFunction(stmt);
+            LoxFunction function = new LoxFunction(stmt, Env);
             Env.Define(stmt.Name.Lexeme, function);
             return null;
         }
@@ -280,6 +280,12 @@
             object value = Evaluate(stmt.Expression);
             Console.WriteLine(Stringify(value));
             return null;
+        }
+
+        public object VisitReturnStmt(Stmt.Return stmt) {
+            object value = null;
+            if (stmt.Value != null) value = Evaluate(stmt.Value);
+            throw new Return(value);
         }
 
         public object VisitVarStmt(Stmt.Var stmt) {
