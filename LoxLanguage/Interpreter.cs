@@ -1,12 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LoxLanguage {
+﻿namespace LoxLanguage {
     internal class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object> {
-        private Environment Env = new Environment();
+        public Environment Globals = new Environment();
+        private Environment Env;
+
+        internal class TimeUtils {
+            private static readonly DateTime Jan1st1970 = new DateTime
+            (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            public static long CurrentTimeMillis() {
+                return (long)(DateTime.UtcNow - Jan1st1970).TotalMilliseconds;
+            }
+        }
+        internal class ClockDefinition : LoxCallable {
+            public int Arity() { return 0; }
+            public object Call(Interpreter interpreter, List<object> arguments) {
+                return (double)TimeUtils.CurrentTimeMillis();
+            }
+            public string toString() { return "<native fn>";  }
+        }
+
+        public Interpreter() {
+            Env = Globals;            
+
+            // native function
+            Globals.Define("clock", new ClockDefinition());
+        }
+
         public object VisitBinaryExpr(Expr.Binary expr) {
             object left = Evaluate(expr.Left);
             object right = Evaluate(expr.Right);
@@ -60,6 +79,41 @@ namespace LoxLanguage {
             }
 
             return null;
+        }
+
+        public object VisitCallExpr(Expr.Call expr) {
+            object callee = Evaluate(expr.Callee);
+
+            List<object> args = new List<object>();
+
+            /*
+             * This is another one of those subtle semantic
+             * choices. Since argument expressions may
+             * have side effects, the order they are evaluated
+             * could be user visible. Even so, some
+             * languages like Scheme and C don't specify an
+             * order. This gives compilers freedom to
+             * reorder them for efficiency, but means users
+             * may be unpleasantly surprised if arguments
+             * aren't evaluated in order they expect.
+             * 
+             */
+
+            foreach (var argument in expr.Arguments) {
+                args.Add(Evaluate(argument));
+            }
+
+            if (!(callee is LoxCallable)) {
+                throw new RuntimeError(expr.Paren, "Can only call functions and classes");            
+            }
+            LoxCallable function = (LoxCallable)callee;
+
+            if (args.Count != function.Arity()) {
+                throw new RuntimeError(expr.Paren, "Expected " + function.Arity() + " arguments but got " + args.Count + ".");
+            }
+
+            
+            return function.Call(this, args);
         }
 
         public void Interpret(List<Stmt> statements) {
@@ -202,6 +256,12 @@ namespace LoxLanguage {
         public object VisitExpressionStmt(Stmt.Expression stmt) {
             // Console.WriteLine(Evaluate(stmt.expr));
             Evaluate(stmt.expr);
+            return null;
+        }
+
+        public object VisitFunctionStmt(Stmt.Function stmt) {
+            LoxFunction function = new LoxFunction(stmt);
+            Env.Define(stmt.Name.Lexeme, function);
             return null;
         }
 

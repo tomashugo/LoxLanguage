@@ -10,11 +10,12 @@ namespace LoxLanguage {
             R VisitVariableExpr(Variable expr);
             R VisitAssignExpr(Assign expr);
             R VisitLogicalExpr(Logical logical);
+            R VisitCallExpr(Call call);
         }
         public class Assign : Expr {
             public Token Name { get; }
             public Expr Value { get; }
-            public Assign (Token name, Expr value) {
+            public Assign(Token name, Expr value) {
                 Name = name;
                 Value = value;
             }
@@ -34,6 +35,20 @@ namespace LoxLanguage {
             }
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitBinaryExpr(this);
+            }
+        }
+        public class Call : Expr {
+            public Expr Callee { get; }
+            public Token Paren { get; }
+            public List<Expr> Arguments { get; }
+
+            public Call(Expr callee, Token paren, List<Expr> arguments) {
+                Callee = callee;
+                Paren = paren;
+                Arguments = arguments;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitCallExpr(this);
             }
         }
         public class Ternary : Expr {

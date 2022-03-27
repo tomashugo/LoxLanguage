@@ -63,6 +63,10 @@ namespace LoxLanguage {
             throw new NotImplementedException();
         }
 
+        public string VisitCallExpr(Expr.Call call) {
+            throw new NotImplementedException();
+        }
+
         //public static void Main(string[] args) {
         //    Expr expression = new Binary(
         //        new Unary (

@@ -4,8 +4,12 @@
  *  
  *  
  *   program        → declaration* EOF ;
- *   declaration    → varDecl
+ *   declaration    → funDecl
+ *                  | varDecl
  *                  | statement ;
+ *   funDecl        → "fun" function ;
+ *   function       → IDENTIFIER "(" parameters? ")" block ;
+ *   parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
  *   varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  *   statement      → exprStmt
  *                    | forStmt
@@ -32,7 +36,9 @@
  *   term           → factor ( ( "-" | "+" ) factor )* ;
  *   factor         → unary ( ( "/" | "*" ) unary )* ;
  *   unary          → ( "!" | "-" ) unary
- *                  | primary ;
+ *                  | call ;
+ *   call           → primary ( "(" arguments? ")" )* ;
+ *   arguments      → expression ( "," expression )* ;
  *   primary        → NUMBER | STRING | "true" | "false" | "nil"
  *                  | "(" expression ")" 
  *                  | IDENTIFIER ;
@@ -66,6 +72,7 @@ namespace LoxLanguage {
 
         private Stmt Declaration() {
             try {
+                if (Match(TokenType.FUN)) return Function("function");
                 if (Match(TokenType.VAR)) return VarDeclaration();
 
                 return Statement();
@@ -155,7 +162,7 @@ namespace LoxLanguage {
         }
 
         private Stmt VarDeclaration() {
-            Token name = Consume(TokenType.IDENTIFIER, "Exepct variable name");
+            Token name = Consume(TokenType.IDENTIFIER, "Expect variable name");
 
             Expr initializer = null;
             if (Match(TokenType.EQUAL)) {
@@ -179,6 +186,30 @@ namespace LoxLanguage {
             Expr expr = Expression();
             Consume(TokenType.SEMICOLON, "Expect ';' after expression");
             return new Stmt.Expression(expr);
+        }
+
+        // This function will be reused in case of Class Methods
+        private Stmt.Function Function(string kind) {
+            Token name = Consume(TokenType.IDENTIFIER, "Expect " + kind + "name.");
+            Consume(TokenType.LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+            List<Token> parameters = new List<Token>();
+
+            if (!Check(TokenType.RIGHT_PAREN)) {
+                do {
+                    if (parameters.Count >= 255) {
+                        Error(Peek(), "Can't have more than 255 parameters.");
+                    }
+
+                    parameters.Add(Consume(TokenType.IDENTIFIER, "Expect parameter name."));
+                } while (Match(TokenType.COMMA));
+            }
+
+            Consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters");
+
+            Consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.");
+            List<Stmt> body = Block();
+            return new Stmt.Function(name, parameters, body);
         }
 
         private List<Stmt> Block() {
@@ -241,7 +272,7 @@ namespace LoxLanguage {
                 return expr;
             }
 
-            while (Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL, TokenType.COMMA)) {
+            while (Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
                 Token oper = Previous();
                 Expr right = Comparison();
                 expr = new Expr.Binary(expr, oper, right);
@@ -309,7 +340,55 @@ namespace LoxLanguage {
                 return new Expr.Unary(oper, right);
             }
 
-            return Primary();
+            return Call();
+        }
+
+        // This is more or less the arguments grammar rule translated to code
+        private Expr FinishCall(Expr callee) {
+            List<Expr> arguments = new List<Expr>();
+
+            if (!Check(TokenType.RIGHT_PAREN)) {
+                do {
+                    if (arguments.Count >= 255) {
+                        Error(Peek(), "Can't have more than 255 arguments.");
+                    }                    
+                    arguments.Add(Expression());
+                } while (Match(TokenType.COMMA));
+            }
+
+            Token paren = Consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
+            return new Expr.Call(callee, paren, arguments);
+        }
+
+        /* 
+         * call           → primary ( "(" arguments? ")" )* ;
+         *
+         */
+        private Expr Call() {
+            Expr expr = Primary();
+
+            while (true) {
+                if (Match(TokenType.LEFT_PAREN)) {
+                    /* 
+                     * 
+                     * The code here doesn't quite line up with the grammar rules. I moved a few
+                     * things around to make the code cleaner - one of the luxuries we have with a
+                     * handwritten parser. But it's roughly similar to how we parse infix operators.
+                     * 
+                     * First, we parse a primary expressoin, the "left operand" to the call. Then, each
+                     * time we see, a (, we call FinishCall() to parse the call expression using the 
+                     * previously parsed expression as the callee. The returned expression becomes the
+                     * new expr and we loop to see if the result is itself called.
+                     * 
+                     */
+                    expr = FinishCall(expr);
+                }
+                else {
+                    break;
+                }
+            }
+
+            return expr;
         }
 
         /* *   primary        → NUMBER | STRING | "true" | "false" | "nil"

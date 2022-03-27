@@ -9,6 +9,7 @@ namespace LoxLanguage {
             R VisitBlockStmt(Block stmt);
             R VisitIfStmt(If stmt);
             R VisitWhileStmt(While stmt);
+            R VisitFunctionStmt(Function stmt);
         }
         public class Block : Stmt {
             public List<Stmt> Statements;
@@ -28,6 +29,21 @@ namespace LoxLanguage {
 
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitExpressionStmt(this);
+            }
+        }
+        public class Function : Stmt {
+            public Token Name { get; }
+            public List<Token> Params { get; }
+            public List<Stmt> Body { get; }
+
+            public Function (Token name, List<Token> _params, List<Stmt> body) {
+                Name = name;
+                Params = _params;
+                Body = body;
+            }
+
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitFunctionStmt(this);
             }
         }
         public class If : Stmt {
