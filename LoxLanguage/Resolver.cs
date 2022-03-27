@@ -1,0 +1,149 @@
+﻿namespace LoxLanguage {
+    class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object> {
+        Interpreter interpreter;
+        Stack<Dictionary<string, bool>> Scopes = new Stack<Dictionary<string, bool>>();
+        public Resolver(Interpreter interpreter) {
+            this.interpreter = interpreter;
+        }
+
+        public object VisitBlockStmt(Stmt.Block stmt) {
+            BeginScope();
+            Resolve(stmt.Statements);
+            EndScope();
+            return null;
+        }
+        public object VisitExpressionStmt(Stmt.Expression stmt) {
+            Resolve(stmt.expr);
+            return null;
+        }
+        public object VisitFunctionStmt(Stmt.Function stmt) {
+            Declare(stmt.Name);
+            Define(stmt.Name);
+
+            ResolveFunction(stmt);
+            return null;
+        }
+        public object VisitIfStmt(Stmt.If stmt) {
+            Resolve(stmt.Condition);
+            Resolve(stmt.ThenBranch);
+            if (stmt.ElseBranch != null) Resolve(stmt.ElseBranch);
+            return null;
+        }
+        public object VisitPrintStmt(Stmt.Print stmt) {
+            Resolve(stmt.Expression);
+            return null;
+        }
+        public object VisitReturnStmt(Stmt.Return stmt) {
+            if (stmt.Value != null) {
+                Resolve(stmt.Value);
+            }
+
+            return null;
+        }
+        private void Resolve(List<Stmt> statements) {
+            foreach (var statement in statements) {
+                Resolve(statement);
+            }
+        }
+        private void ResolveFunction(Stmt.Function function) {
+            BeginScope();
+            foreach (Token param in function.Params) {
+                Declare(param);
+                Define(param);
+            }
+            Resolve(function.Body);
+            EndScope();
+        }
+        private void Resolve(Stmt stmt) {
+            stmt.Accept(this);
+        }
+        private void Resolve(Expr expr) {
+            expr.Accept(this);
+        }
+        private void BeginScope() {
+            Scopes.Push(new Dictionary<string, bool>());
+        }
+        private void EndScope() {
+            Scopes.Pop();
+        }
+        private void Declare(Token name) {
+            if (Scopes.Count == 0) return;
+
+            Dictionary<string, bool> scope = Scopes.Peek();
+            scope.Add(name.Lexeme, false);
+        }
+        private void Define(Token name) {
+            if (Scopes.Count == 0) return;
+            Scopes.Peek().Add(name.Lexeme, true);
+        }
+        private void ResolveLocal(Expr expr, Token name) {
+            for (int i = Scopes.Count - 1; i >= 0; i--) {
+                if (Scopes.ElementAt(i).ContainsKey(name.Lexeme)) {
+                    interpreter.Resolve(expr, Scopes.Count - 1 - i);
+                    return;
+                }
+            }
+        }
+        public object VisitVarStmt(Stmt.Var stmt) {
+            Declare(stmt.Name);
+            if (stmt.Initializer != null) {
+                Resolve(stmt.Initializer);
+            }
+            Define(stmt.Name);
+            return null;
+        }
+        public object VisitWhileStmt(Stmt.While stmt) {
+            Resolve(stmt.Condition);
+            Resolve(stmt.Body);
+            return null;
+        }
+        public object VisitAssignExpr(Expr.Assign expr) {
+            Resolve(expr.Value);
+            ResolveLocal(expr, expr.Name);
+            return null;
+        }
+        public object VisitBinaryExpr(Expr.Binary expr) {
+            Resolve(expr.Left);
+            Resolve(expr.Right);
+            return null;
+        }
+        public object VisitTernaryExpr(Expr.Ternary expr) {
+            Resolve(expr.Left);
+            Resolve(expr.Middle);
+            Resolve(expr.Right);
+            return null;
+        }
+        public object VisitCallExpr (Expr.Call expr) {
+            Resolve(expr.Callee);
+
+            foreach (var argument in expr.Arguments) {
+                Resolve(argument);
+            }
+
+            return null;
+        }
+        public object VisitGroupingExpr(Expr.Grouping expr) {
+            Resolve(expr.Expression);
+            return null;
+        }
+        public object VisitLiteralExpr(Expr.Literal expr) {
+            return null;
+        }
+        public object VisitLogicalExpr(Expr.Logical expr) {
+            Resolve(expr.Left);
+            Resolve(expr.Right);
+            return null;
+        }
+        public object VisitUnaryExpr(Expr.Unary expr) {
+            Resolve(expr.Right);
+            return null;
+        }
+        public object VisitVariableExpr(Expr.Variable expr) {
+            if (Scopes.Count != 0 && Scopes.Peek()[expr.Name.Lexeme] == false) {
+                Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
+            }
+            ResolveLocal(expr, expr.Name);
+            return null;
+        }
+    }
+}
