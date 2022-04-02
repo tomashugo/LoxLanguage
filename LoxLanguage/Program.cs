@@ -1,7 +1,6 @@
 ﻿/*
  *  2022 - Tomás Hugo R. M. Almeida
- *  Copyright
- *  
+ *  All rights reserved
  */
 
 using System.Text;

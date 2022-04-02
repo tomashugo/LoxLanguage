@@ -66,6 +66,14 @@ namespace LoxLanguage {
             throw new NotImplementedException();
         }
 
+        public string VisitGetExpr(Expr.Get getobj) {
+            throw new NotImplementedException();
+        }
+
+        public string VisitSetExpr(Expr.Set setobj) {
+            throw new NotImplementedException();
+        }
+
         //public static void Main(string[] args) {
         //    Expr expression = new Binary(
         //        new Binary(new Literal(1), new Token(TokenType.PLUS, "+", null, 1), new Literal(2)), 

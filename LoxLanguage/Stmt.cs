@@ -1,4 +1,4 @@
-namespace LoxLanguage {
+namespace LoxLanguage { 
     abstract class Stmt {
         public abstract R Accept<R>(Visitor<R> visitor);
 
@@ -11,6 +11,7 @@ namespace LoxLanguage {
             R VisitWhileStmt(While stmt);
             R VisitFunctionStmt(Function stmt);
             R VisitReturnStmt(Return stmt);
+            R VisitClassStmt(Class stmt);
         }
         public class Block : Stmt {
             public List<Stmt> Statements;
@@ -20,6 +21,17 @@ namespace LoxLanguage {
             }
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitBlockStmt(this);
+            }
+        }
+        public class Class : Stmt {
+            public Token Name { get; }
+            public List<Function> Methods { get; }
+            public Class(Token name, List<Function> methods) {
+                Name = name;
+                Methods = methods;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitClassStmt(this);
             }
         }
         public class Expression : Stmt {
@@ -86,7 +98,6 @@ namespace LoxLanguage {
             }
 
         }
-
         public class Var : Stmt {
             public Token Name { get; }
             public Expr Initializer { get; }

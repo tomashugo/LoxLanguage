@@ -116,7 +116,14 @@
             
             return function.Call(this, args);
         }
+        public object VisitGetExpr(Expr.Get expr) {
+            object obj = Evaluate(expr.Object);
+            if (obj is LoxInstance) {
+                return ((LoxInstance)obj).Get(expr.Name);
+            }
 
+            throw new RuntimeError(expr.Name, "Only instances have properties.");
+        }
         public void Interpret(List<Stmt> statements) {
             try {
                 foreach (var stmt in statements) {
@@ -142,8 +149,7 @@
 
         public void Resolve(Expr expr, int depth) {
             Locals.Add(expr, depth);
-        }
-        
+        }        
         public void ExecuteBlock(List<Stmt> statements, Environment environment) {
             Environment previous = Env;
 
@@ -158,7 +164,20 @@
                 Env = previous; 
             }
         }
+        public object VisitClassStmt(Stmt.Class stmt) {
+            Env.Define(stmt.Name.Lexeme, null);
 
+            Dictionary<string, LoxFunction> methods = new Dictionary<string, LoxFunction>();
+            
+            foreach (var method in stmt.Methods) {
+                LoxFunction function = new LoxFunction(method, Env);
+                methods.Add(method.Name.Lexeme, function);
+            }
+
+            LoxClass klass = new LoxClass(stmt.Name.Lexeme, methods);
+            Env.Assign(stmt.Name, klass);
+            return null;
+        }
         public object VisitBlockStmt(Stmt.Block stmt) {
             ExecuteBlock(stmt.Statements, new Environment(Env));
             return null;
@@ -180,7 +199,17 @@
 
             return Evaluate(expr.Right);
         }
+        public object VisitSetExpr(Expr.Set expr) {
+            object obj = Evaluate(expr.Object);
 
+            if (!(obj is LoxInstance)) {
+                throw new RuntimeError(expr.Name, "Only instances have fields.");
+            }
+
+            object value = Evaluate(expr.Value);
+            ((LoxInstance)obj).Set(expr.Name, value);
+            return value;
+        }
         public object VisitTernaryExpr(Expr.Ternary expr) {            
             object left = Evaluate(expr.Left);
             object middle = Evaluate(expr.Middle);

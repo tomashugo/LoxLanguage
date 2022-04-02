@@ -11,6 +11,8 @@ namespace LoxLanguage {
             R VisitAssignExpr(Assign expr);
             R VisitLogicalExpr(Logical logical);
             R VisitCallExpr(Call call);
+            R VisitGetExpr(Get getobj);
+            R VisitSetExpr(Set setobj);
         }
         public class Assign : Expr {
             public Token Name { get; }
@@ -49,6 +51,18 @@ namespace LoxLanguage {
             }
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitCallExpr(this);
+            }
+        }
+        public class Get : Expr {
+            public Expr Object { get; }
+            public Token Name { get; }
+
+            public Get (Expr obj, Token name) {
+                Object = obj;
+                Name = name;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitGetExpr(this);
             }
         }
         public class Ternary : Expr {
@@ -101,6 +115,20 @@ namespace LoxLanguage {
             }
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitLogicalExpr(this);
+            }
+        }
+        public class Set : Expr {
+            public Expr Object { get; }
+            public Token Name { get; }
+            public Expr Value { get; }
+
+            public Set (Expr obj, Token name, Expr value) {
+                Object = obj;
+                Name = name;
+                Value = value;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitSetExpr(this);
             }
         }
         public class Unary : Expr {

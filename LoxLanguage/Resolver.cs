@@ -10,13 +10,24 @@
 
         private enum FunctionType {
             NONE,
-            FUNCTION
+            FUNCTION,
+            METHOD
         }
-
         public object VisitBlockStmt(Stmt.Block stmt) {
             BeginScope();
             Resolve(stmt.Statements);
             EndScope();
+            return null;
+        }
+        public object VisitClassStmt(Stmt.Class stmt) {
+            Declare(stmt.Name);
+            Define(stmt.Name);
+
+            foreach (Stmt.Function method in stmt.Methods) {
+                FunctionType declaration = FunctionType.METHOD;
+                ResolveFunction(method, declaration);
+            }
+
             return null;
         }
         public object VisitExpressionStmt(Stmt.Expression stmt) {
@@ -152,6 +163,10 @@
 
             return null;
         }
+        public object VisitGetExpr (Expr.Get expr) {
+            Resolve(expr.Object);
+            return null;
+        }
         public object VisitGroupingExpr(Expr.Grouping expr) {
             Resolve(expr.Expression);
             return null;
@@ -162,6 +177,11 @@
         public object VisitLogicalExpr(Expr.Logical expr) {
             Resolve(expr.Left);
             Resolve(expr.Right);
+            return null;
+        }
+        public object VisitSetExpr(Expr.Set expr) {
+            Resolve(expr.Value);
+            Resolve(expr.Object);
             return null;
         }
         public object VisitUnaryExpr(Expr.Unary expr) {
@@ -181,6 +201,6 @@
             }
             ResolveLocal(expr, expr.Name);
             return null;
-        }
+        }        
     }
 }

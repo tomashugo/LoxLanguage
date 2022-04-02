@@ -4,9 +4,11 @@
  *  
  *  
  *   program        → declaration* EOF ;
- *   declaration    → funDecl
+ *   declaration    → classDecl
+ *                  | funDecl
  *                  | varDecl
  *                  | statement ;
+ *   classDecl      → "class" IDENTIFIER "{" function* "}" ;
  *   funDecl        → "fun" function ;
  *   function       → IDENTIFIER "(" parameters? ")" block ;
  *   parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
@@ -28,7 +30,7 @@
  *   whileStmt      → "while" "(" expression ")" statement ;
  *   block          → "{" declaration* "}" ;
  *   expression     → assignment ;
- *   assignment     → IDENTIFIER "=" assignment
+ *   assignment     → ( call "." ) ? IDENTIFIER "=" assignment
  *                  | logic_or ;
  *   logic_or       → logic_and ( "or" logic_and )* ;
  *   logic_and      → equality ( "and" equality )* ;
@@ -38,7 +40,7 @@
  *   factor         → unary ( ( "/" | "*" ) unary )* ;
  *   unary          → ( "!" | "-" ) unary
  *                  | call ;
- *   call           → primary ( "(" arguments? ")" )* ;
+ *   call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
  *   arguments      → expression ( "," expression )* ;
  *   primary        → NUMBER | STRING | "true" | "false" | "nil"
  *                  | "(" expression ")" 
@@ -73,6 +75,7 @@ namespace LoxLanguage {
 
         private Stmt Declaration() {
             try {
+                if (Match(TokenType.CLASS)) return ClassDeclaration();
                 if (Match(TokenType.FUN)) return Function("function");
                 if (Match(TokenType.VAR)) return VarDeclaration();
 
@@ -82,6 +85,20 @@ namespace LoxLanguage {
                 Synchronize();
                 return null;
             }
+        }
+
+        private Stmt ClassDeclaration () {
+            Token name = Consume(TokenType.IDENTIFIER, "Expect class name.");
+            Consume(TokenType.LEFT_BRACE, "Expect '{' before class body");
+
+            List<Stmt.Function> methods = new List<Stmt.Function> ();
+            while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd()) {
+                methods.Add(Function("method"));
+            }
+
+            Consume(TokenType.RIGHT_BRACE, "Expect '}' after class body");
+
+            return new Stmt.Class(name, methods);
         }
 
         private Stmt Statement() {
@@ -94,7 +111,6 @@ namespace LoxLanguage {
 
             return ExpressionStatement();
         }
-
         private Stmt ForStatement() {
             Consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
 
@@ -141,7 +157,6 @@ namespace LoxLanguage {
 
             return body;
         }
-
         private Stmt IfStatement() {
             Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'");
             Expr condition = Expression();
@@ -156,13 +171,11 @@ namespace LoxLanguage {
 
             return new Stmt.If(condition, thenBranch, elseBranch);  
         }
-
         private Stmt PrintStatement() {
             Expr value = Expression();
             Consume(TokenType.SEMICOLON, "Expect ';' after value");
             return new Stmt.Print(value);
         }
-
         private Stmt ReturnStatement() {
             Token keyword = Previous();
             Expr value = null;
@@ -184,8 +197,7 @@ namespace LoxLanguage {
 
             Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
             return new Stmt.Var(name, initializer);
-        }            
-
+        }
         private Stmt WhileStatement() {
             Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
             Expr condition = Expression();
@@ -194,13 +206,11 @@ namespace LoxLanguage {
 
             return new Stmt.While(condition, body);
         }
-
         private Stmt ExpressionStatement() {
             Expr expr = Expression();
             Consume(TokenType.SEMICOLON, "Expect ';' after expression");
             return new Stmt.Expression(expr);
         }
-
         // This function will be reused in case of Class Methods
         private Stmt.Function Function(string kind) {
             Token name = Consume(TokenType.IDENTIFIER, "Expect " + kind + "name.");
@@ -224,7 +234,6 @@ namespace LoxLanguage {
             List<Stmt> body = Block();
             return new Stmt.Function(name, parameters, body);
         }
-
         private List<Stmt> Block() {
             List<Stmt> statements = new List<Stmt> ();
 
@@ -245,6 +254,9 @@ namespace LoxLanguage {
                 if (expr is Expr.Variable) {
                     Token name = ((Expr.Variable)expr).Name;
                     return new Expr.Assign(name, value);
+                } else if (expr is Expr.Get) {
+                    Expr.Get getobj = (Expr.Get)expr;
+                    return new Expr.Set(getobj.Object, getobj.Name, value);
                 }
 
                 Error(equals, "Invalid assignment target.");
@@ -395,6 +407,9 @@ namespace LoxLanguage {
                      * 
                      */
                     expr = FinishCall(expr);
+                } else if (Match(TokenType.DOT)) {
+                    Token name = Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+                    expr = new Expr.Get(expr, name);
                 }
                 else {
                     break;
