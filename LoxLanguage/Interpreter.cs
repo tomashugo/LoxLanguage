@@ -2,6 +2,7 @@
     internal class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object> {
         public Environment Globals = new Environment();
         private Environment Env;
+        private Dictionary<Expr, int> Locals = new Dictionary<Expr, int> ();
 
         internal class TimeUtils {
             private static readonly DateTime Jan1st1970 = new DateTime
@@ -138,6 +139,10 @@
         private void Execute(Stmt stmt) {
             stmt.Accept(this);
         }
+
+        public void Resolve(Expr expr, int depth) {
+            Locals.Add(expr, depth);
+        }
         
         public void ExecuteBlock(List<Stmt> statements, Environment environment) {
             Environment previous = Env;
@@ -212,7 +217,16 @@
         }
 
         public object VisitVariableExpr(Expr.Variable expr) {
-            return Env.Get(expr.Name);
+            return LookUpVariable(expr.Name, expr);
+        }
+
+        private object LookUpVariable(Token Name, Expr expr) {                         
+            if (Locals.ContainsKey(expr)) {
+                Locals.TryGetValue(expr, out int distance);
+                return Env.GetAt(distance, Name.Lexeme);
+            } else {
+                return Globals.Get(Name);
+            }
         }
 
         private void CheckNumberOperand(Token oper, object operand) {
@@ -254,7 +268,6 @@
         }        
 
         public object VisitExpressionStmt(Stmt.Expression stmt) {
-            // Console.WriteLine(Evaluate(stmt.expr));
             Evaluate(stmt.expr);
             return null;
         }
@@ -308,7 +321,14 @@
 
         public object VisitAssignExpr(Expr.Assign expr) {
             Object value = Evaluate(expr.Value);
-            Env.Assign(expr.Name, value);          
+
+            Locals.TryGetValue(expr, out int distance);
+            if (distance != null) {                
+                Env.AssignAt(distance, expr.Name, value);
+            }
+            else {
+                Globals.Assign(expr.Name, value);
+            }
             return value;
         }
         

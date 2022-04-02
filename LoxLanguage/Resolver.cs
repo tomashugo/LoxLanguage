@@ -2,8 +2,15 @@
     class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object> {
         Interpreter interpreter;
         Stack<Dictionary<string, bool>> Scopes = new Stack<Dictionary<string, bool>>();
+        FunctionType currentFunction = FunctionType.NONE;
+
         public Resolver(Interpreter interpreter) {
             this.interpreter = interpreter;
+        }
+
+        private enum FunctionType {
+            NONE,
+            FUNCTION
         }
 
         public object VisitBlockStmt(Stmt.Block stmt) {
@@ -20,7 +27,8 @@
             Declare(stmt.Name);
             Define(stmt.Name);
 
-            ResolveFunction(stmt);
+            
+            ResolveFunction(stmt, FunctionType.FUNCTION);
             return null;
         }
         public object VisitIfStmt(Stmt.If stmt) {
@@ -34,18 +42,26 @@
             return null;
         }
         public object VisitReturnStmt(Stmt.Return stmt) {
+            if (currentFunction == FunctionType.NONE) {
+                Lox.Error(stmt.Keyword, "Can't return from top-level code.");
+            }
+
             if (stmt.Value != null) {
                 Resolve(stmt.Value);
             }
 
             return null;
         }
-        private void Resolve(List<Stmt> statements) {
+        public void Resolve(List<Stmt> statements) {
             foreach (var statement in statements) {
                 Resolve(statement);
             }
         }
-        private void ResolveFunction(Stmt.Function function) {
+        private void ResolveFunction(Stmt.Function function, FunctionType functionType) {
+            
+            FunctionType enclosingFunction = currentFunction;
+            currentFunction = functionType;
+
             BeginScope();
             foreach (Token param in function.Params) {
                 Declare(param);
@@ -53,6 +69,8 @@
             }
             Resolve(function.Body);
             EndScope();
+
+            currentFunction = enclosingFunction;
         }
         private void Resolve(Stmt stmt) {
             stmt.Accept(this);
@@ -70,19 +88,31 @@
             if (Scopes.Count == 0) return;
 
             Dictionary<string, bool> scope = Scopes.Peek();
+
+
+            if (scope.ContainsKey(name.Lexeme)) {
+                Lox.Error(name, "Already a variable with this name in this scope");
+            }
+
             scope.Add(name.Lexeme, false);
         }
         private void Define(Token name) {
             if (Scopes.Count == 0) return;
-            Scopes.Peek().Add(name.Lexeme, true);
+
+            // NOT
+            if (Scopes.Peek().ContainsKey(name.Lexeme)) Scopes.Peek()[name.Lexeme] = true;
+            else Scopes.Peek().Add(name.Lexeme, true);
         }
         private void ResolveLocal(Expr expr, Token name) {
-            for (int i = Scopes.Count - 1; i >= 0; i--) {
-                if (Scopes.ElementAt(i).ContainsKey(name.Lexeme)) {
-                    interpreter.Resolve(expr, Scopes.Count - 1 - i);
-                    return;
+            int index = 0;
+
+            foreach (var scope in Scopes) {
+                if (scope.ContainsKey(name.Lexeme)) {
+                    interpreter.Resolve(expr, index);
                 }
+                index++;
             }
+
         }
         public object VisitVarStmt(Stmt.Var stmt) {
             Declare(stmt.Name);
@@ -113,7 +143,7 @@
             Resolve(expr.Right);
             return null;
         }
-        public object VisitCallExpr (Expr.Call expr) {
+        public object VisitCallExpr(Expr.Call expr) {
             Resolve(expr.Callee);
 
             foreach (var argument in expr.Arguments) {
@@ -139,7 +169,14 @@
             return null;
         }
         public object VisitVariableExpr(Expr.Variable expr) {
-            if (Scopes.Count != 0 && Scopes.Peek()[expr.Name.Lexeme] == false) {
+            /*  
+             *  Avoiding such constructions:
+             *  
+             *  var a;
+             *  a = a;
+             *  
+             */
+            if (Scopes.Count != 0 && Scopes.Peek().ContainsKey(expr.Name.Lexeme) && Scopes.Peek()[expr.Name.Lexeme] == false) {
                 Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
             }
             ResolveLocal(expr, expr.Name);
