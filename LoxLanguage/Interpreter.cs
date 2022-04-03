@@ -170,7 +170,7 @@
             Dictionary<string, LoxFunction> methods = new Dictionary<string, LoxFunction>();
             
             foreach (var method in stmt.Methods) {
-                LoxFunction function = new LoxFunction(method, Env);
+                LoxFunction function = new LoxFunction(method, Env, method.Name.Lexeme.Equals("init"));
                 methods.Add(method.Name.Lexeme, function);
             }
 
@@ -305,7 +305,7 @@
         }
 
         public object VisitFunctionStmt(Stmt.Function stmt) {
-            LoxFunction function = new LoxFunction(stmt, Env);
+            LoxFunction function = new LoxFunction(stmt, Env, false);
             Env.Define(stmt.Name.Lexeme, function);
             return null;
         }

@@ -8,14 +8,16 @@ namespace LoxLanguage {
     class LoxFunction : LoxCallable {
         private Stmt.Function Declaration;
         private readonly Environment Closure;
-        public LoxFunction(Stmt.Function declaration, Environment closure) {
+        private bool IsInitializer;
+        public LoxFunction(Stmt.Function declaration, Environment closure, bool isInitializer) {
             Declaration = declaration;
             Closure = closure;
+            IsInitializer = isInitializer;
         }
         public LoxFunction Bind(LoxInstance instance) {
             Environment environment = new Environment(Closure);
             environment.Define("this", instance);
-            return new LoxFunction(Declaration, environment);
+            return new LoxFunction(Declaration, environment, IsInitializer);
         }
 
         /*
@@ -32,9 +34,11 @@ namespace LoxLanguage {
             try {
                 interpreter.ExecuteBlock(Declaration.Body, environment);
             } catch (Return returnValue) {
+                if (IsInitializer) return Closure.GetAt(0, "this");
                 return returnValue.Value;
             }
-           
+
+            if (IsInitializer) return Closure.GetAt(0, "this");
             return null;
         }
 

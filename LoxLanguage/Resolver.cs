@@ -10,6 +10,7 @@
         private enum FunctionType {
             NONE,
             FUNCTION,
+            INITIALIZER,
             METHOD
         }
         private enum ClassType {
@@ -35,6 +36,9 @@
 
             foreach (Stmt.Function method in stmt.Methods) {
                 FunctionType declaration = FunctionType.METHOD;
+                if (method.Name.Lexeme.Equals("init")) {
+                    declaration = FunctionType.INITIALIZER;
+                }
                 ResolveFunction(method, declaration);
             }
 
@@ -66,6 +70,10 @@
             return null;
         }
         public object VisitReturnStmt(Stmt.Return stmt) {
+            if (currentFunction == FunctionType.INITIALIZER) {
+                Lox.Error(stmt.Keyword, "Can't return a valua from a initializer");
+            }
+
             if (currentFunction == FunctionType.NONE) {
                 Lox.Error(stmt.Keyword, "Can't return from top-level code.");
             }
