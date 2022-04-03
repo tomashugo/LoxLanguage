@@ -177,6 +177,8 @@ namespace LoxLanguage {
         private bool IsDigit(char c) {
             return c >= '0' && c <= '9';
         }
+
+        // Current variable is incremented only if Match to the argument
         private bool Match(char expected) {
             if (IsAtEnd()) return false;
             if (Source.ElementAt(Current) != expected) return false;

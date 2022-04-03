@@ -353,9 +353,9 @@
 
         public object VisitAssignExpr(Expr.Assign expr) {
             Object value = Evaluate(expr.Value);
-
-            Locals.TryGetValue(expr, out int distance);
-            if (distance != null) {                
+            
+            if (Locals.ContainsKey(expr)) {
+                Locals.TryGetValue(expr, out int distance);
                 Env.AssignAt(distance, expr.Name, value);
             }
             else {
