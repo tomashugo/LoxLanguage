@@ -20,7 +20,7 @@ namespace LoxLanguage {
             }
 
             LoxFunction method = Klass.FindMethod(name.Lexeme);
-            if (method != null) return method;
+            if (method != null) return method.Bind(this);
 
             throw new RuntimeError(name, "Undefined property '" + name.Lexeme + "'.");
         }

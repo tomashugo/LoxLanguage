@@ -7,12 +7,16 @@
         public Resolver(Interpreter interpreter) {
             this.interpreter = interpreter;
         }
-
         private enum FunctionType {
             NONE,
             FUNCTION,
             METHOD
         }
+        private enum ClassType {
+            NONE,
+            CLASS
+        }
+        private ClassType CurrentClass = ClassType.NONE;
         public object VisitBlockStmt(Stmt.Block stmt) {
             BeginScope();
             Resolve(stmt.Statements);
@@ -20,14 +24,23 @@
             return null;
         }
         public object VisitClassStmt(Stmt.Class stmt) {
+            ClassType enclosingClass = CurrentClass;
+            CurrentClass = ClassType.CLASS;
+
             Declare(stmt.Name);
             Define(stmt.Name);
+
+            BeginScope();
+            Scopes.Peek().Add("this", true);
 
             foreach (Stmt.Function method in stmt.Methods) {
                 FunctionType declaration = FunctionType.METHOD;
                 ResolveFunction(method, declaration);
             }
 
+            EndScope();
+
+            CurrentClass = enclosingClass;
             return null;
         }
         public object VisitExpressionStmt(Stmt.Expression stmt) {
@@ -184,6 +197,15 @@
             Resolve(expr.Object);
             return null;
         }
+        public object VisitThisExpr(Expr.This expr) {
+            if (CurrentClass == ClassType.NONE) {
+                Lox.Error(expr.Keyword, "Can't use 'this' outside a class.");
+            }
+
+            ResolveLocal(expr, expr.Keyword);
+            return null;
+        }
+
         public object VisitUnaryExpr(Expr.Unary expr) {
             Resolve(expr.Right);
             return null;

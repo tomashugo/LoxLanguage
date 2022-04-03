@@ -12,6 +12,11 @@ namespace LoxLanguage {
             Declaration = declaration;
             Closure = closure;
         }
+        public LoxFunction Bind(LoxInstance instance) {
+            Environment environment = new Environment(Closure);
+            environment.Define("this", instance);
+            return new LoxFunction(Declaration, environment);
+        }
 
         /*
          * We create a new environment at each call, not at the function declaration.

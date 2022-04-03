@@ -75,6 +75,10 @@ namespace LoxLanguage {
             throw new NotImplementedException();
         }
 
+        public string VisitThisExpr(Expr.This thisobj) {
+            throw new NotImplementedException();
+        }
+
         //public static void Main(string[] args) {
         //    Expr expression = new Binary(
         //        new Unary (

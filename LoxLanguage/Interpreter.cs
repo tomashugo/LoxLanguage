@@ -210,6 +210,9 @@
             ((LoxInstance)obj).Set(expr.Name, value);
             return value;
         }
+        public object VisitThisExpr(Expr.This expr) {
+            return LookUpVariable(expr.Keyword, expr);
+        }
         public object VisitTernaryExpr(Expr.Ternary expr) {            
             object left = Evaluate(expr.Left);
             object middle = Evaluate(expr.Middle);

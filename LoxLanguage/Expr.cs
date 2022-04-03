@@ -13,6 +13,7 @@ namespace LoxLanguage {
             R VisitCallExpr(Call call);
             R VisitGetExpr(Get getobj);
             R VisitSetExpr(Set setobj);
+            R VisitThisExpr(This thisobj);
         }
         public class Assign : Expr {
             public Token Name { get; }
@@ -131,6 +132,16 @@ namespace LoxLanguage {
                 return visitor.VisitSetExpr(this);
             }
         }
+        public class This : Expr {
+            public Token Keyword { get; }
+            public This (Token keyword) {
+                Keyword = keyword;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitThisExpr(this);
+            }
+        }
+
         public class Unary : Expr {
             public Token Operator { get; }
             public Expr Right { get; }
