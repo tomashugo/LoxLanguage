@@ -230,7 +230,7 @@
             return value;
         }
         public object VisitSuperExpr(Expr.Super expr) {
-            int distance = Locals[expr];
+            int distance = Locals[expr];            
             
             LoxClass superclass = (LoxClass)Env.GetAt(distance, "super");
             LoxInstance obj = (LoxInstance)Env.GetAt(distance - 1, "this");

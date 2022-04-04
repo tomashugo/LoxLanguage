@@ -227,7 +227,7 @@
         public object VisitSuperExpr(Expr.Super expr) {
             if (CurrentClass == ClassType.NONE) {
                 Lox.Error(expr.Keyword, "Can't use 'super' outside of a class");
-            } else if (CurrentClass == ClassType.SUBCLASS) {
+            } else if (CurrentClass != ClassType.SUBCLASS) {
                 Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
             }
 
