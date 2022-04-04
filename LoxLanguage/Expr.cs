@@ -9,11 +9,12 @@ namespace LoxLanguage {
             R VisitUnaryExpr(Unary expr);
             R VisitVariableExpr(Variable expr);
             R VisitAssignExpr(Assign expr);
-            R VisitLogicalExpr(Logical logical);
-            R VisitCallExpr(Call call);
-            R VisitGetExpr(Get getobj);
-            R VisitSetExpr(Set setobj);
-            R VisitThisExpr(This thisobj);
+            R VisitLogicalExpr(Logical expr);
+            R VisitCallExpr(Call expr);
+            R VisitGetExpr(Get expr);
+            R VisitSetExpr(Set expr);
+            R VisitThisExpr(This expr);
+            R VisitSuperExpr(Super expr);
         }
         public class Assign : Expr {
             public Token Name { get; }
@@ -130,6 +131,17 @@ namespace LoxLanguage {
             }
             public override R Accept<R>(Visitor<R> visitor) {
                 return visitor.VisitSetExpr(this);
+            }
+        }
+        public class Super : Expr {
+            public Token Keyword { get; }
+            public Token Method { get; }
+            public Super (Token keyword, Token method) {
+                Keyword = keyword;
+                Method = method;
+            }
+            public override R Accept<R>(Visitor<R> visitor) {
+                return visitor.VisitSuperExpr(this);
             }
         }
         public class This : Expr {

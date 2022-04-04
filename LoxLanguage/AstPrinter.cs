@@ -79,6 +79,10 @@ namespace LoxLanguage {
             throw new NotImplementedException();
         }
 
+        public string VisitSuperExpr(Expr.Super expr) {
+            throw new NotImplementedException();
+        }
+
         //public static void Main(string[] args) {
         //    Expr expression = new Binary(
         //        new Unary (
