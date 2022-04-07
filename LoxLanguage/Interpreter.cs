@@ -148,7 +148,7 @@
         }
 
         public void Resolve(Expr expr, int depth) {
-            Locals.Add(expr, depth);
+            if (!Locals.ContainsKey(expr)) Locals.Add(expr, depth);
         }        
         public void ExecuteBlock(List<Stmt> statements, Environment environment) {
             Environment previous = Env;
