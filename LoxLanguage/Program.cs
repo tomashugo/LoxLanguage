@@ -63,14 +63,7 @@ namespace LoxLanguage
             }
             catch (ParseError parseError) {
                 Console.WriteLine(parseError.Message);
-            }
-
-            //Console.WriteLine(new AstPrinter().Print(expression));
-
-            //foreach (var token in tokens) {                
-            //    Console.WriteLine(token.ToString());
-            //    //Console.WriteLine(token.GetType);
-            //}
+            }            
         }
 
         public static void Error(int line, string message) {
@@ -92,7 +85,7 @@ namespace LoxLanguage
         }        
 
         static void Report(int line, string where, string message) {
-            Console.WriteLine($"[line {line}] Error {where}: {message}");
+            Console.WriteLine($"[line {line}] Error{where}: {message}");
             HadError = true;
         }
     }

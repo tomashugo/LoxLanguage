@@ -87,16 +87,16 @@
             Resolve(stmt.Expression);
             return null;
         }
-        public object VisitReturnStmt(Stmt.Return stmt) {
-            if (currentFunction == FunctionType.INITIALIZER) {
-                Lox.Error(stmt.Keyword, "Can't return a valua from a initializer");
-            }
-
+        public object VisitReturnStmt(Stmt.Return stmt) {            
             if (currentFunction == FunctionType.NONE) {
                 Lox.Error(stmt.Keyword, "Can't return from top-level code.");
             }
 
             if (stmt.Value != null) {
+                if (currentFunction == FunctionType.INITIALIZER) {
+                    Lox.Error(stmt.Keyword, "Can't return a value from a initializer");
+                }
+
                 Resolve(stmt.Value);
             }
 
