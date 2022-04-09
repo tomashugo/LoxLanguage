@@ -40,7 +40,7 @@
             return Declaration.Params.Count;
         }
 
-        public string ToString() {
+        public override string ToString() {
             return "<fn " + Declaration.Name.Lexeme + ">";
         }
     }

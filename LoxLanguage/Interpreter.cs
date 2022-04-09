@@ -17,7 +17,7 @@
             public object Call(Interpreter interpreter, List<object> arguments) {
                 return (double)TimeUtils.CurrentTimeMillis();
             }
-            public string toString() { return "<native fn>";  }
+            public override string ToString() { return "<native fn>";  }
         }
 
         public Interpreter() {
